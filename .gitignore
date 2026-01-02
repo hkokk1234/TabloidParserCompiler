@@ -1,0 +1,10 @@
+# Build outputs
+*.class
+*.pyc
+*.interp
+*.tokens
+
+# OS / tooling noise
+.DS_Store
+.idea/
+.vscode/

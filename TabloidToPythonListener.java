@@ -1,24 +1,24 @@
-import java.util.*;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-// Listener pou metatrepei Tabloid se Python kwdika
+import java.util.ArrayList;
+import java.util.List;
+// Listener that converts Tabloid source to Python code
 
 public class TabloidToPythonListener extends TabloidBaseListener {
-// Apothikeush ton eksagomenou Python kwdika
+// Buffer for the generated Python code
     private StringBuilder pythonCode = new StringBuilder();
-	 // epipedo kanonikothtas (indentation)
+	 // Current indentation level
     private int indentLevel = 0;
-// Ftiaxnei ta kena analoga me to indentLevel
+// Create indentation matching the current level
     private String indent() {
         return "    ".repeat(indentLevel);
     }
-// Epistrefei ton teliko Python kwdika ws String
+// Return the generated Python code as a String
     public String getPythonCode() {
         return pythonCode.toString();
     }
 
     @Override
     public void enterAnathesi(TabloidParser.AnathesiContext ctx) {
-		  // Antistoixei mia anathesi timis se metavliti
+		  // Assignment
         String var = ctx.ID().getText();
         String expr = transformExpr(ctx.ekfrasi().getText());
         pythonCode.append(indent()).append(var).append(" = ").append(expr).append("\n");
@@ -26,12 +26,12 @@ public class TabloidToPythonListener extends TabloidBaseListener {
 
     @Override
     public void enterEktypwsi(TabloidParser.EktypwsiContext ctx) {
-		        // Antistoixei entolh ektypwsis
+		        // Print statement
 
         String expr = transformExpr(ctx.ekfrasi().getText());
         pythonCode.append(indent()).append("print(").append(expr).append(")\n");
     }
-        // methodos epistrofis apo synartisi
+        // Function return
 
     @Override
     public void enterEpistrofi(TabloidParser.EpistrofiContext ctx) {
@@ -44,7 +44,7 @@ public class TabloidToPythonListener extends TabloidBaseListener {
             pythonCode.append(indent()).append("return\n");
         }
     }
-        //methodos dhmiourgias synarthshs
+        // Function definition
 
     @Override
     public void enterDhmiourgiasynartishs(TabloidParser.DhmiourgiasynartishsContext ctx) {
@@ -58,14 +58,14 @@ public class TabloidToPythonListener extends TabloidBaseListener {
                   .append(String.join(", ", params))
                   .append("):\n");
         indentLevel++;
-		 // auxhsh to indent gia to swma tis synartisis
+         // Increase indent for function body
     }
-// Meiwsh to indent otan teleiwnei h synartisi
+// Decrease indent when the function ends
     @Override
     public void exitDhmiourgiasynartishs(TabloidParser.DhmiourgiasynartishsContext ctx) {
         indentLevel--;
     }
-        // dhmiourgia  entolhs if me synthiki
+        // If statement with condition
 
     @Override
     public void enterIf(TabloidParser.IfContext ctx) {
@@ -86,7 +86,7 @@ public class TabloidToPythonListener extends TabloidBaseListener {
             indentLevel++;
         }
     }
-        //methodos dhmiourgias loop while
+        // While loop
 
     @Override
     public void enterWhile(TabloidParser.WhileContext ctx) {
@@ -106,7 +106,7 @@ public class TabloidToPythonListener extends TabloidBaseListener {
 
     @Override
     public void enterKlhsh(TabloidParser.KlhshContext ctx) {
-		        // Klhsi synartisis me orismata
+                // Function call with arguments
 
         String funcName = ctx.ID().getText();
         List<String> args = new ArrayList<>();
@@ -123,7 +123,7 @@ public class TabloidToPythonListener extends TabloidBaseListener {
 
     @Override
     public void enterEisodos(TabloidParser.EisodosContext ctx) {
-		        //eisodos xrhsth me input
+                // Read user input
 
         String var = ctx.ID().getText();
         pythonCode.append(indent())
@@ -131,7 +131,7 @@ public class TabloidToPythonListener extends TabloidBaseListener {
     }
 
     private String convertOperator(String op) {
-		        //metatroph logikwn kai arithmitikous telestwn
+		        // Map Tabloid operators to Python
 
         return switch (op) {
             case "PLUS" -> "+";
@@ -150,14 +150,14 @@ public class TabloidToPythonListener extends TabloidBaseListener {
     }
 
     private String transformExpr(String expr) {
-		        //metatroph mia Tabloid ekfrashs se Python sumvath morfi
+		        // Convert a Tabloid expression into Python-friendly form
 
         expr = expr.replaceAll("(?<=[a-z])(?=[A-Z])", " ");
         expr = expr.replaceAll("(?<=[A-Z])(?=[A-Z][a-z])", " ");
         expr = expr.replaceAll("(?<=[a-zA-Z])(?=[0-9])", " ");
         expr = expr.replaceAll("(?<=[0-9])(?=[a-zA-Z])", " ");
         expr = expr.replaceAll("\\s+", " ");
-        //metatropi  lexewn se Python
+        // Keyword-to-operator replacements
 
         expr = expr.replaceAll("\\bTRUE\\b|\\bTOTALLY RIGHT\\b", "True");
         expr = expr.replaceAll("\\bFALSE\\b|\\bCOMPLETELY WRONG\\b", "False");
@@ -173,7 +173,7 @@ public class TabloidToPythonListener extends TabloidBaseListener {
         expr = expr.replaceAll("\\bMODULO\\b", "%");
         expr = expr.replaceAll("\\bAND\\b", "and");
         expr = expr.replaceAll("\\bOR\\b", "or");
-        //metatroph "FUNCTION OF x" se "FUNCTION(x)"
+        // Turn "FUNCTION OF x" into "FUNCTION(x)"
 
         expr = expr.replaceAll("\\b(\\w+)\\s+OF\\s+([^\\n\\r]+)", "$1($2)");
 

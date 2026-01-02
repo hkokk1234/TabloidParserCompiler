@@ -14,10 +14,10 @@ public class Tabloid2Python {
         String outputFile = inputFile.replace(".tbd", ".py");
 
         try {
-            //diavasma arxeiou ws keimeno
+            // Read source file as text
             String code = Files.readString(Paths.get(inputFile));
 
-            //diorthosh kollhmenwn lexewn
+            // Insert spaces where tokens may be glued together
             code = code.replaceAll("(?<=[a-z])(?=[A-Z])", " ");
             code = code.replaceAll("(?<=[A-Z])(?=[A-Z][a-z])", " ");
             code = code.replaceAll("(?<=[a-zA-Z])(?=[0-9])", " ");
@@ -28,26 +28,26 @@ public class Tabloid2Python {
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             TabloidParser parser = new TabloidParser(tokens);
 
-            //entopismos lathwn kata th syntaksh
+            // Surface parser diagnostics
             parser.removeErrorListeners();
             parser.addErrorListener(new DiagnosticErrorListener());
 
-//parsing me vash ton kanona "programma"
+            // Parse using grammar entry rule "programma"
             ParseTree tree = parser.programma();
-//dhmiourgia tou listener pou metatrepei Tabloid se Python
+            // Listener that emits Python
             TabloidToPythonListener listener = new TabloidToPythonListener();
             ParseTreeWalker.DEFAULT.walk(listener, tree);
-//eksagwgh kwdika se python
+            // Export generated Python
             String pythonCode = listener.getPythonCode();
-//epityshs metatroph arxeiou
+            // Write the converted file
             Files.writeString(Paths.get(outputFile), pythonCode);
             System.out.println("Conversion completed: " + outputFile);
 
         } catch (IOException e) {
-			//lathos kata to diavasma/eggrafi arxeiou
+            // File read/write problem
             System.err.println("File error: " + e.getMessage());
         } catch (Exception e) {
-			//geniko lathos kata to parsing i tin metatropi
+            // Generic parse/convert problem
             System.err.println("Error during parsing or conversion: " + e.getMessage());
         }
     }
